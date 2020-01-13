@@ -1,0 +1,208 @@
+---
+title: "Projet_Final"
+author: "Zifeng_LIU"
+date: "11/01/2020"
+output: html_document
+---
+
+
+# Importer des Données
+
+```{r}
+corpus <- read.table("gibsonwu2012data.txt", header = TRUE, 
+                               stringsAsFactors = FALSE,encoding="UTF-8")
+```
+
+
+# Explication du Corpus
+
+C'est un corpus receuilli pour analyser la procédure des subordonées chinoises en contexte, y compris 9 variables. 
+
+# Explication des Variables
+
+## *subj* 
+
+Dans ce corpus, *subj* est pour représenter les participants de l'expérience, 40 *subj* en total. Chaque *subj* est distribué un numéro, de 1 à 40
+
+## *item* 
+
+Les séries de phrases utilisées dans l'expérience, 16 séries en total. Chaque *item* est distribué un numéro, de 1 à 16
+
+## *type* 
+
+Le type de la phrase cible, dans ce corpus, il y a deux différents types de phrase. *obj-ext* (object-extraction) et *subj-ext* (subject-extraction)
+
+## *pos* 
+
+Une variable pour indiquer la postion des mots cibles dans la phrase cible, il y a quatre positions possibles. Les numéros de 6 à 9 sont utilisés successivement pour signifier ces quatre positions 
+
+## *word*
+
+Les mots cibles dans la phrase cible
+
+## *correct* 
+
+Une variable pour vérifier la compréhension des participants sur les phrases, mais ici, que les réponses correctes sont chosies
+
+## *rt*
+
+Une variable signifie *reading time*, pour noter le temps sacrétifié à lire le mot cible
+
+## *region*  
+
+Une variable pour indiquer où les mots cibles se situent dans la structure syntaxique. Cinq différentes régions sont désignées. L'ordre successif est montré ci-dessous:
+
+de1 < de < headnoun(dehnoun)< headnoun1
+
+"de" est le marqueur de la subordonnée relative en chinois comme "que" en français
+
+## *type2*
+
+Le synonyme de la varibale *type*, il y a aussi deux types, "object relative"(="obj-ext") et "subject relative"(="subj-ext")
+
+# Variable Aléatoire
+
+Ici, la variable *rt* est aléatoire.
+
+```{r}
+library(tidyverse)
+ggplot(data = corpus) +
+  geom_bar(mapping = aes(x =rt)) 
+```
+
+Selon le graphique, on observe que la distribution de *rt* est surtout dans l'intervalle de 0 à 2000.
+
+# Relation des Variables
+
+## Relation entre *region* et *rt*
+
+La graphique suivante nous indique que "de1" et "dehnoun" sont les duex regions les plus proéminentes. Leur boîte est plus grande que les autres. De plus, les résultats du moyen de *rt* pour chaque region montre que le moyen de *rt* dans "de1" et "dehnoun" est beaucoup plus que les autres
+
+```{r}
+ggplot(data = corpus, mapping = aes(x = region, y = rt, fill = type)) + 
+  geom_boxplot() 
+```
+
+```{r}
+ggplot(data = corpus) + 
+  stat_summary(
+    mapping = aes(x = region, y = rt),
+    fun.ymin = min,
+    fun.ymax = max,
+    fun.y = median
+   )
+```
+
+## Le moyen de *rt* pour chaque *region*
+
+### Le moyen de *rt* pour 'de1'
+
+```{r}
+de1 <- filter(corpus, region == 'de1')
+rt_de1 <- select(de1,rt)
+mean_rt_de1 <- colMeans(rt_de1, na.rm = T)
+```
+
+### Le moyen de *rt* pour 'de'
+
+```{r}
+de <- filter(corpus, region == 'de')
+rt_de <- select(de,rt)
+mean_rt_de <- colMeans(rt_de, na.rm = T)
+```
+
+### Le moyen de *rt* pour 'headnoun'
+
+```{r}
+headnoun <- filter(corpus, region == 'headnoun')
+rt_headnoun <- select(headnoun,rt)
+mean_rt_headnoun <- colMeans(rt_headnoun, na.rm = T)
+```
+
+### Le moyen de *rt* pour 'dehnoun'
+
+```{r}
+dehnoun <- filter(corpus, region == 'dehnoun')
+rt_dehnoun <- select(dehnoun,rt)
+mean_rt_dehnoun <- colMeans(rt_dehnoun, na.rm = T)
+```
+
+### Le moyen de *rt* pour 'headnoun1'
+
+```{r}
+headnoun1 <- filter(corpus, region == 'headnoun1')
+rt_headnoun1 <- select(headnoun1,rt)
+mean_rt_headnoun1 <- colMeans(rt_headnoun1, na.rm = T)
+```
+
+## Relation entre *type* et *rt*
+
+```{r}
+ggplot(data = corpus, mapping = aes(x = type, y = rt)) + 
+  geom_boxplot()
+```
+
+## Relation entre *region* et *type*
+
+```{r}
+ggplot(data = corpus) +
+  geom_bar(mapping = aes(x = type, fill = region))
+```
+
+## Relation entre *pos* et *region*
+
+```{r}
+ggplot(data = corpus) +
+  geom_bar(mapping = aes(x = pos, fill = region))
+```
+Dans chaque type de phrase, on peut trouver cinq regions et la distribution de chaque region est quasiment égale. Mais pour la relation de *pos* et *region*, region 'dehnoun' et 'headnoun' se trouvent dans la même position '8'. 
+
+## Le moyen de *rt* pour chaque *type*
+
+### Le moyen de *rt* pour 'subject relative'
+
+```{r}
+library(dplyr)
+sr <-  filter(corpus,type2 == "subject relative")
+rt_sr <- select(sr, rt)
+mean_rt_sr <- colMeans(rt_sr,na.rm = TRUE)
+```
+
+### Le moyen de *rt* pour 'object relative'
+
+```{r}
+or <-  filter(corpus,type2 == "object relative")
+rt_or <- select(or, rt)
+mean_rt_or <- colMeans(rt_or,na.rm = TRUE)
+```
+
+
+
+# Liste des Questions
+
+## 1.Quelle est la différence syntaxique entre la region "dehnoun" et "headnoun" 
+
+```{r}
+region <- filter(corpus, region == 'dehnoun'| region == 'headnoun')
+```
+
+C'est difficile à répondre cette question selon des données du corpus. Ces deux régions apparaissent dans tous les deux types, un même mot s'occupe aussi ces deux regions. Mais il y a une chose intéressante sur ces deux regions.
+
+```{r}
+ggplot(data = corpus, mapping = aes(x = region, y = rt, fill = type)) + 
+  geom_boxplot() 
+```
+
+Dans cette graphique, on observe que les participants passent moins de temps à lire les mots en "headnoun" que les mots en "dehnoun".
+
+Ce qu'on a parlé ci-dessus provoque une autre question, ces duex 'regions' apparaissent dans la même position de la phrase, mais le temps passé à ces deux 'region' est énormément différent. leur moyen de *rt* soutient aussi cette observation. Qu'est-ce qui se passe ? 
+
+## 2. Que révèle le différent *rt* sur les deux types de phrases
+
+Pour répondre à cette question, on a calculé le moyen de *rt* pour chaque type de phrase. Lé résultat nous a indiqué que les participants passent plus de temps à lire "subj-ext". De plus, selon la graphique, on a trouvé aussi que dans chaque region, *rt* de "subj-ext" est globalement plus haut que *rt* de "obj-ext". En outre, l'intervalle de *rt* de "subj-ext" varie plus fortement que l'intervalle de *rt* de "obj-ext" qui est plutôt intensive.
+
+## 3. Pourquoi les mots dans "de1" et "dehnoun" sont plus difficile à lire ? 
+
+Evidemment, dans tous les deux types de phrase, le temps passé dans ces deux 'region' sont beaucoup élevé que les autres. Une explication possible est que l'influence de 'de' qui fonctionne comme le marqueur de la subordonnée. Les participants doivent essayer à juger la frontière de la phrase ici. Ce pourrait une réponse pour "de1", mais pas pour "dehnoun" car la relation de "dehnoun" et "headnoun" est encor obscure.
+
+
